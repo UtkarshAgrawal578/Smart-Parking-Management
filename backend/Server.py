@@ -24,11 +24,11 @@ app.add_middleware(
 
 # ---------------- LOAD MODEL ----------------
 model = YOLO(
-    r"D:\Smart-Parking-Management\Smart-Parking-Management\backend\best.pt")
+    r"C:\Users\ASUS\OneDrive\Desktop\SmartParking\backend\best.pt")
 
 # ---------------- VIDEO ----------------
 cap = cv2.VideoCapture(
-    r"D:\Smart-Parking-Management\Smart-Parking-Management\backend\video1.mp4")
+    r"C:\Users\ASUS\OneDrive\Desktop\SmartParking\backend\video1.mp4")
 if not cap.isOpened():
     raise RuntimeError("❌ Video cannot be opened")
 

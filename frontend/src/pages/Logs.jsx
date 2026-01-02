@@ -11,7 +11,7 @@ export default function Logs() {
 
   return (
     <div className="p-6">
-      <LogTable logs={logs} />
+      <LogTable logs={logs}/>
     </div>
   );
 }

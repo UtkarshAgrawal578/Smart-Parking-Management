@@ -43,23 +43,33 @@ export default function Dashboard() {
         </div>
 
         <div className="space-y-4">
-          <LiveCountCard title="Cars" value={status.cars} />
-          <LiveCountCard title="Free Slots" value={status.free} />
-          <LiveCountCard title="Occupied Slots" value={status.occupied} />
-          <AlertBox show={true} />
-          ...................
-        </div>
-        <div id="slotList" className="slot-grid">
-          {Object.entries(status.slots).map(([slot, stat]) => (
-            <div
-              key={slot}
-              className={`slot-card ${stat === "FILLED" ? "filled" : "empty"}`}
-            >
-              <span className="slot-name">{slot}</span>
-              <span className="slot-status">{stat}</span>
-            </div>
-          ))}
-        </div>
+  <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">
+    Live Parking Status
+  </h2>
+
+  <LiveCountCard title="Cars" value={status.cars} />
+  <LiveCountCard title="Free Slots" value={status.free} />
+  <LiveCountCard title="Occupied Slots" value={status.occupied} />
+
+  <AlertBox show={status.occupied > (status.free + status.occupied)} />
+</div>
+ 
+        <div id="slotList" className="slot-grid space-y-4">
+  <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">
+    Filled and Empty Slots
+  </h2>
+
+  {Object.entries(status.slots).map(([slot, stat]) => (
+    <div
+      key={slot}
+      className={`slot-card ${stat === "FILLED" ? "filled" : "empty"}`}
+    >
+      <span className="slot-name">{slot}</span>
+      <span className="slot-status">{stat}</span>
+    </div>
+  ))}
+</div>
+
       </div>
     </>
   );

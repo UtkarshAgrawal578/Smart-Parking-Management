@@ -7,7 +7,7 @@ polygons = []
 polygon_file = "polygons.json"
 
 cap = cv2.VideoCapture(
-    r"D:\Smart-Parking-Management\Smart-Parking-Management\backend\video1.mp4")
+    r"C:\Users\ASUS\OneDrive\Desktop\SmartParking\backend\video1.mp4")
 ret, frame = cap.read()
 frame = cv2.resize(frame, (1020, 500))
 
