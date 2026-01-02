@@ -7,6 +7,10 @@ const API = axios.create({
 // Fetch live count
 export const getLiveCount = () => API.get("/liveCount");
 
+
+
+export const getStatus = () => axios.get("http://localhost:8000/api/status");
+
 // Fetch logs
 export const getLogs = async () => {
   const response = await API.get("/logs");
