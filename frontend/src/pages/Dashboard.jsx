@@ -47,7 +47,6 @@ export default function Dashboard() {
           <LiveCountCard title="Free Slots" value={status.free} />
           <LiveCountCard title="Occupied Slots" value={status.occupied} />
           <AlertBox show={true} />
-          ...................
         </div>
         <div id="slotList" className="slot-grid">
           {Object.entries(status.slots).map(([slot, stat]) => (
