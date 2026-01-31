@@ -1,149 +1,333 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import Lottie from "lottie-react";
+import parkingAnim from "../assets/parkingAnim.json";
+import { MdOutlineLocalParking } from "react-icons/md";
+import { HiOutlineBellAlert } from "react-icons/hi2";
+import { AiOutlineFileProtect } from "react-icons/ai";
 
 export default function Landing() {
 
-  // Scroll fade animation
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) entry.target.classList.add("show");
-        });
-      },
-      { threshold: 0.15 }
-    );
+  // Scroll reveal
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
 
-    document.querySelectorAll(".scroll-fade").forEach(el => observer.observe(el));
-  }, []);
+  document
+    .querySelectorAll(".reveal, .bg-anim")
+    .forEach(el => observer.observe(el));
+}, []);
+
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-slate-900 text-gray-200 min-h-screen">
 
-      {/* NAVBAR */}
-      <header className="flex justify-between items-center px-8 py-4 bg-white shadow-sm">
-        <h1 className="text-2xl font-bold text-blue-600">e-Parking Control</h1>
+      {/* ================= NAVBAR ================= */}
+      <header className="sticky top-0 z-50 bg-slate-950 border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl font-semibold tracking-wide text-teal-400">
+            Civic Parking Oversight System
+          </h1>
 
-        <nav className="hidden md:flex gap-6 text-gray-700 font-medium">
-          <a href="#features" className="hover:text-blue-600">Features</a>
-          <a href="#about" className="hover:text-blue-600">About</a>
-          <a href="#contact" className="hover:text-blue-600">Contact</a>
-        </nav>
+          <nav className="hidden md:flex gap-8 text-gray-300">
+            <a href="#features" className="hover:text-teal-400 transition">Capabilities</a>
+            <a href="#about" className="hover:text-teal-400 transition">Overview</a>
+            <a href="#contact" className="hover:text-teal-400 transition">Contact</a>
+            <style>{`
+  html {
+    scroll-behavior: smooth;
+  }
+`}</style>
+          </nav>
 
-        <Link
-          to="/dashboard"
-          className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700"
-        >
-          Dashboard
-        </Link>
+          <Link
+            to="/dashboard"
+            className="px-5 py-2 bg-teal-500 text-slate-900 rounded-md font-semibold hover:bg-teal-400 transition"
+          >
+            Dashboard
+          </Link>
+        </div>
       </header>
 
-      {/* HERO SECTION */}
-      <section className="flex flex-col-reverse md:flex-row items-center px-8 py-16 md:py-24">
+      
+      {/* ================= HERO WITH ANIMATION ================= */}
+<section className="relative w-screen h-[90vh] bg-slate-900 overflow-hidden">
 
-        {/* Text */}
-        <div className="md:w-1/2 text-center md:text-left scroll-fade opacity-0 translate-y-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
-            Smart Parking Monitoring System
-          </h2>
+  {/* ===== FULL WIDTH BACKGROUND ANIMATION ===== */}
+  <div className="absolute inset-0 w-full h-full z-0 bg-anim">
+    <Lottie
+      animationData={parkingAnim}
+      loop
+      speed={0.9}
+      className="w-full h-full opacity-70"
+      rendererSettings={{ preserveAspectRatio: "xMidYMid slice" }}
+    />
+  </div>
 
-          <p className="mt-4 text-gray-600 text-lg">
-            Real-time capacity tracking, alert notifications, and detailed logs —
-            all from an interactive dashboard.
+  {/* ===== DARK OVERLAY ===== */}
+  <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-slate-900/40 z-10" />
+
+  {/* ===== TEXT CONTENT ===== */}
+  <div className="relative z-20 h-full flex items-center">
+    <div className="w-full px-6 md:px-16 lg:px-24">
+      <div className="max-w-3xl reveal">
+
+        <h2 className="text-4xl md:text-6xl font-bold leading-tight text-gray-100">
+          Smart Urban <br />
+          <span className="text-teal-400">Parking Governance</span>
+        </h2>
+
+        <p className="mt-6 text-lg md:text-xl text-gray-300 leading-relaxed">
+          A centralized digital platform enabling Municipal Corporations
+          to monitor parking capacity, prevent violations, and ensure
+          transparent and regulation-compliant operations.
+        </p>
+
+        <div className="mt-10">
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-teal-500 text-slate-900 rounded-md text-lg font-semibold hover:bg-teal-400 transition"
+          >
+            Enter Control Panel
+          </Link>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  {/* ===== COMPONENT-LOCAL STYLES ===== */}
+  <style>{`
+    /* TEXT REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 1s ease;
+    }
+
+    .reveal.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* BACKGROUND ANIMATION TRANSITION */
+    .bg-anim {
+      opacity: 0;
+      transform: scale(1.05);
+      transition: opacity 1.8s ease, transform 2.5s ease;
+    }
+
+    .bg-anim.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+  `}</style>
+
+</section>
+<section id="about" className="bg-slate-900">
+  <div className="max-w-5xl mx-auto px-8 py-28">
+
+    <h3 className="text-4xl md:text-5xl font-bold text-center text-gray-100 mb-12 reveal">
+      About the Platform
+    </h3>
+
+    <div className="space-y-10 reveal">
+
+      <p className="text-xl md:text-2xl text-gray-300 leading-relaxed text-center">
+        The Smart Urban Parking Governance Platform is a centralized digital
+        solution developed to assist Municipal Corporations in regulating,
+        monitoring, and enforcing parking operations across urban areas.
+      </p>
+
+      <p className="text-xl md:text-2xl text-gray-300 leading-relaxed text-center">
+        By providing real-time visibility into parking occupancy, automated
+        compliance alerts, and secure digital records, the system ensures
+        transparency, accountability, and adherence to approved parking
+        capacity norms.
+      </p>
+
+      <p className="text-xl md:text-2xl text-gray-300 leading-relaxed text-center">
+        The platform supports data-driven governance, reduces congestion,
+        prevents misuse by parking operators, and enables city authorities
+        to improve operational efficiency while enhancing the overall
+        urban mobility experience.
+      </p>
+
+    </div>
+  </div>
+</section>
+
+
+      {/* ================= FEATURES ================= */}
+      
+<section id="features" className="bg-slate-950">
+  <div className="max-w-7xl mx-auto px-8 py-24">
+
+    <h3 className="text-3xl font-bold text-center mb-16 reveal">
+      System Capabilities
+    </h3>
+
+    <div className="grid md:grid-cols-3 gap-12">
+
+      {/* CARD 1 */}
+      <div className="feature-card reveal">
+        <div className="icon-wrap">
+          <MdOutlineLocalParking className="icon" />
+        </div>
+        <h4 className="title">Live Capacity Surveillance</h4>
+        <p className="desc">
+          Continuous monitoring of parking occupancy with automated limit
+          enforcement.
+        </p>
+      </div>
+
+      {/* CARD 2 */}
+      <div className="feature-card reveal">
+        <div className="icon-wrap">
+          <HiOutlineBellAlert className="icon" />
+        </div>
+        <h4 className="title">Regulatory Alert Engine</h4>
+        <p className="desc">
+          Instant alerts when operators exceed approved parking thresholds.
+        </p>
+      </div>
+
+      {/* CARD 3 */}
+      <div className="feature-card reveal">
+        <div className="icon-wrap">
+          <AiOutlineFileProtect className="icon" />
+        </div>
+        <h4 className="title">Immutable Audit Records</h4>
+        <p className="desc">
+          Secure digital logs ensuring accountability and dispute resolution.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  {/* ===== STYLES ===== */}
+  <style>{`
+    .feature-card {
+      background: #020617;
+      border: 1px solid #1e293b;
+      padding: 2.5rem;
+      border-radius: 1rem;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      border-color: #14b8a6;
+      box-shadow: 0 20px 40px rgba(20, 184, 166, 0.15);
+    }
+
+    .icon-wrap {
+      width: 60px;
+      height: 60px;
+      background: rgba(20, 184, 166, 0.1);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      transition: all 0.4s ease;
+    }
+
+    .feature-card:hover .icon-wrap {
+      background: rgba(20, 184, 166, 0.2);
+      transform: scale(1.1) rotate(3deg);
+    }
+
+    .icon {
+      font-size: 32px;
+      color: #2dd4bf;
+    }
+
+    .title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-bottom: 0.75rem;
+    }
+
+    .desc {
+      color: #9ca3af;
+      line-height: 1.6;
+    }
+  `}</style>
+
+</section>
+
+
+      {/* ================= ACCESS ================= */}
+      <section className="bg-white-950">
+        <div className="max-w-4xl mx-auto px-8 py-24 reveal">
+          <h3 className="text-3xl font-bold text-center mb-8">
+            Authorized Access
+          </h3>
+
+          <p className="text-center text-gray-400 mb-12">
+            Secure entry point for municipal officials and regulatory authorities.
           </p>
 
-          <div className="mt-6">
-            <Link
-              to="/dashboard"
-              className="px-6 py-3 bg-blue-600 text-white text-lg rounded-lg shadow hover:bg-blue-700"
-            >
-              View Dashboard
-            </Link>
+          <div className="flex justify-center">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 w-full max-w-md hover:border-teal-500 transition">
+              <Link
+                to="/mcd/login"
+                className="block text-center bg-teal-500 text-slate-900 py-3 rounded-md font-semibold hover:bg-teal-400 transition"
+              >
+                Secure Login
+              </Link>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Image */}
-        <div className="md:w-1/2 flex justify-center scroll-fade opacity-0 translate-y-6">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/854/854878.png"
-            alt="Parking"
-            className="w-64 md:w-96"
-          />
+      {/* ================= CONTACT ================= */}
+      <section id="contact" className="bg-slate-950">
+        <div className="max-w-4xl mx-auto px-8 py-24 text-center reveal">
+          <h3 className="text-3xl font-bold mb-4">
+            Official Communication
+          </h3>
+          <p className="text-gray-400">
+            For deployment, integration, or support inquiries
+          </p>
+          <p className="text-teal-400 font-semibold text-lg mt-2">
+            support@civicparking.gov.in
+          </p>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section id="features" className="px-8 py-16 bg-white">
-        <h3 className="text-3xl font-bold text-center text-gray-800 scroll-fade opacity-0 translate-y-6">
-          Key Features
-        </h3>
-
-        <div className="grid md:grid-cols-3 gap-8 mt-10">
-          {[
-            { title: "🔴 Live Count", desc: "Track real-time parking occupancy instantly." },
-            { title: "⚠ Alert System", desc: "Get auto alerts when capacity limits are reached." },
-            { title: "📄 Logs History", desc: "View timestamped entry/exit parking logs." }
-          ].map((f, i) => (
-            <div
-              key={i}
-              className="p-6 bg-gray-100 rounded-xl shadow hover:shadow-lg transition scroll-fade opacity-0 translate-y-6"
-            >
-              <h4 className="text-xl font-semibold mb-2 text-gray-900">
-                {f.title}
-              </h4>
-              <p className="text-gray-600">
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ABOUT SECTION */}
-      <section id="about" className="px-8 py-16 scroll-fade opacity-0 translate-y-6">
-        <h3 className="text-3xl font-bold text-center text-gray-800">
-          About the System
-        </h3>
-
-        <p className="text-gray-600 text-center mt-4 max-w-3xl mx-auto">
-         This platform is built for Municipal Corporations like MCD to ensure transparent and accountable parking management. It provides a real-time, tamper-proof system that tracks parking capacity accurately, prevents overparking by contractors, and enforces contractual limits.
-
-By delivering live occupancy data, secure records, and automated alerts, the solution reduces congestion, stops misuse, and improves operational efficiency. Our goal is to support smarter, technology-driven governance and create a more organized parking experience for the city.
-        </p>
-      </section>
-
-      {/* CONTACT SECTION */}
-      <section id="contact" className="px-8 py-16 scroll-fade opacity-0 translate-y-6">
-        <h3 className="text-3xl font-bold text-center text-gray-800">
-          Contact Us
-        </h3>
-        <p className="text-center text-gray-600 mt-4">
-          For collaborations, support, or project inquiries:
-        </p>
-        <p className="text-center text-blue-600 font-semibold text-lg mt-2">
-          support@smartparking.com
-        </p>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-gray-800 text-white py-6 text-center mt-10">
+      {/* ================= FOOTER ================= */}
+      <footer className="bg-white-950 border-t border-slate-800 text-center py-6 text-gray-500">
         <p className="text-sm">
-          © {new Date().getFullYear()} e-Parking Control — All Rights Reserved.
+          © {new Date().getFullYear()} Civic Parking Oversight System | Government Platform
         </p>
       </footer>
 
-      {/* Scroll Animation CSS */}
+      {/* ================= ANIMATIONS ================= */}
       <style>{`
-        .scroll-fade {
+        .reveal {
           opacity: 0;
-          transform: translateY(20px);
-          transition: all 0.8s ease-out;
+          transform: translateY(30px);
+          transition: all 1s ease;
         }
-        .scroll-fade.show {
+        .reveal.show {
           opacity: 1;
           transform: translateY(0);
         }
       `}</style>
+
     </div>
   );
 }
