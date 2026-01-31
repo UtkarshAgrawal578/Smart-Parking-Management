@@ -67,7 +67,7 @@ useEffect(() => {
       animationData={parkingAnim}
       loop
       speed={0.9}
-      className="w-full h-full opacity-70"
+      className="w-full h-full opacity-100"
       rendererSettings={{ preserveAspectRatio: "xMidYMid slice" }}
     />
   </div>
