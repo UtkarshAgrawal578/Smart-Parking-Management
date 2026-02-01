@@ -15,60 +15,60 @@ export default function Dashboard() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      getStatus().then((res) => setStatus({ ...res.data }));
+      getStatus().then((res) => setStatus(res.data));
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    console.log("Status updated:", status);
-  }, [status]);
-
-  const slotList = document.getElementById("slotList");
-
-  const ul = document.createElement("ul");
 
   return (
     <>
       <Navbar />
-      <div className="p-6 grid grid-cols-3 gap-4">
-        {/* Video */}
-        <div className="rounded shadow overflow-hidden">
-          <img
-            src="http://localhost:8000/api/video"
-            alt="Live feed"
-            className="w-full"
-          />
+
+      <div className="dashboard-container">
+
+        {/* 🔴 ALERT AT TOP */}
+        <div className="alert-row">
+          <AlertBox show={status.occupied > status.free} />
         </div>
 
-        <div className="space-y-4">
-  <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">
-    Live Parking Status
-  </h2>
+        {/* 🎥 VIDEO + 📊 STATS SIDE BY SIDE */}
+        <div className="top-row">
+          <div className="video-section">
+            <h2 className="section-title">Live Parking Feed</h2>
+            <div className="video-card">
+              <img
+                src="http://localhost:8000/api/video"
+                alt="Live feed"
+                className="video-frame"
+              />
+            </div>
+          </div>
 
-  <LiveCountCard title="Cars" value={status.cars} />
-  <LiveCountCard title="Free Slots" value={status.free} />
-  <LiveCountCard title="Occupied Slots" value={status.occupied} />
+          <div className="stats-section">
+            <h2 className="section-title">Live Overview</h2>
+            <div className="stats-grid">
+              <LiveCountCard title="Cars Detected" value={status.cars} variant="blue" />
+              <LiveCountCard title="Free Slots" value={status.free} variant="green" />
+              <LiveCountCard title="Occupied Slots" value={status.occupied} variant="red" />
+            </div>
+          </div>
+        </div>
 
-  <AlertBox show={status.occupied > (status.free + status.occupied)} />
-</div>
- 
-        <div id="slotList" className="slot-grid space-y-4">
-  <h2 className="text-xl font-semibold text-gray-800 border-b pb-2">
-    Filled and Empty Slots
-  </h2>
-
-  {Object.entries(status.slots).map(([slot, stat]) => (
-    <div
-      key={slot}
-      className={`slot-card ${stat === "FILLED" ? "filled" : "empty"}`}
-    >
-      <span className="slot-name">{slot}</span>
-      <span className="slot-status">{stat}</span>
-    </div>
-  ))}
-</div>
+        {/* 🅿️ SLOT STATUS BELOW */}
+        <div className="slots-section dark-slots">
+          <h2 className="section-title">Slot Status</h2>
+          <div className="slot-grid">
+            {Object.entries(status.slots).map(([slot, stat]) => (
+              <div
+                key={slot}
+                className={`slot-card ${stat === "FILLED" ? "slot-filled" : "slot-empty"}`}
+              >
+                <span className="slot-name">{slot}</span>
+                <span className="slot-state">{stat}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
       </div>
     </>
