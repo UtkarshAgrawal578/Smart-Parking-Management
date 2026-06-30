@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from ultralytics import YOLO
 import cv2
@@ -6,57 +6,40 @@ import numpy as np
 import json
 import os
 from datetime import datetime
-import uvicorn
-from fastapi.middleware.cors import CORSMiddleware
 
+# ================= ROUTER =================
+router = APIRouter(prefix="/api", tags=["YOLO"])
 
-# ---------------- APP ----------------
-app = FastAPI()
+# ================= LOAD MODEL =================
+MODEL_PATH = r"C:\Users\ASUS\OneDrive\Desktop\SmartParking\backend\best.pt"
+model = YOLO(MODEL_PATH)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React dev server
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ================= VIDEO =================
+VIDEO_PATH = r"C:\Users\ASUS\OneDrive\Desktop\SmartParking\backend\video1.mp4"
+cap = cv2.VideoCapture(VIDEO_PATH)
 
-
-# ---------------- LOAD MODEL ----------------
-model = YOLO(
-    r"C:\Users\ASUS\OneDrive\Desktop\SmartParking\backend\best.pt")
-
-# ---------------- VIDEO ----------------
-cap = cv2.VideoCapture(
-    r"C:\Users\ASUS\OneDrive\Desktop\SmartParking\backend\video1.mp4")
 if not cap.isOpened():
     raise RuntimeError("❌ Video cannot be opened")
 
-# ---------------- POLYGONS ----------------
-polygon_points = []
-polygons = []
+# ================= POLYGONS =================
 polygon_file = "polygons.json"
+polygons = []
 
 if os.path.exists(polygon_file):
-    try:
-        with open(polygon_file, "r") as f:
-            loaded = json.load(f)
+    with open(polygon_file, "r") as f:
+        loaded = json.load(f)
 
-        for i, poly in enumerate(loaded):
-            if isinstance(poly, list):
-                polygons.append({"id": f"P{i+1}", "points": poly})
-            elif isinstance(poly, dict):
-                polygons.append(poly)
-    except:
-        polygons = []
+    for poly in loaded:
+        # Validate polygon structure
+        if (
+            isinstance(poly, dict)
+            and "id" in poly
+            and isinstance(poly.get("points"), list)
+            and len(poly["points"]) >= 3
+        ):
+            polygons.append(poly)
 
-
-def save_polygons():
-    with open(polygon_file, "w") as f:
-        json.dump(polygons, f)
-
-
-# ---------------- GLOBAL STATUS ----------------
+# ================= GLOBAL STATUS =================
 latest_status = {
     "timestamp": None,
     "cars": 0,
@@ -65,17 +48,36 @@ latest_status = {
     "slots": {}
 }
 
-
-# ---------------- FRAME GENERATOR ----------------
+# ================= FRAME GENERATOR =================
 def generate_frames():
     global latest_status
 
+    last_frame = None  # store last valid frame
+
     while True:
         ret, frame = cap.read()
-        if not ret:
-            break
 
+        # ---------------- VIDEO ENDED → FREEZE ----------------
+        if not ret:
+            if last_frame is None:
+                continue  # nothing to show yet
+
+            success, buffer = cv2.imencode(".jpg", last_frame)
+            if not success:
+                continue  # encoding failed, try again
+
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n"
+                + buffer.tobytes()
+                + b"\r\n"
+            )
+            continue
+
+        # ---------------- NORMAL FRAME ----------------
         frame = cv2.resize(frame, (1020, 500))
+        last_frame = frame.copy()  # ✅ GUARANTEED valid
+
         results = model(frame, verbose=False)
 
         slot_status = {poly["id"]: "EMPTY" for poly in polygons}
@@ -84,14 +86,17 @@ def generate_frames():
         if results and results[0].boxes is not None:
             boxes = results[0].boxes.xyxy.cpu().numpy().astype(int)
 
-            for box in boxes:
+            for x1, y1, x2, y2 in boxes:
                 car_count += 1
-                x1, y1, x2, y2 = box
-                cx, cy = int((x1 + x2) / 2), int((y1 + y2) / 2)
+                cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
 
                 for poly in polygons:
-                    pts = np.array(poly["points"], dtype=np.int32)
-                    if cv2.pointPolygonTest(pts, (cx, cy), False) >= 0:
+                    pts = np.array(
+                        poly["points"], dtype=np.int32
+                    ).reshape((-1, 1, 2))
+                    pts = np.ascontiguousarray(pts)
+
+                    if cv2.pointPolygonTest(pts, (int(cx), int(cy)), False) >= 0:
                         slot_status[poly["id"]] = "FILLED"
                         break
 
@@ -106,37 +111,37 @@ def generate_frames():
             "slots": slot_status
         }
 
-        # -------- DRAW OVERLAY --------
+        # ---------------- DRAW POLYGONS ----------------
         for poly in polygons:
-            pts = np.array(poly["points"], dtype=np.int32).reshape((-1, 1, 2))
-            color = (0, 0, 255) if slot_status[poly["id"]] == "FILLED" else (
-                0, 255, 0)
+            pts = np.array(
+                poly["points"], dtype=np.int32
+            ).reshape((-1, 1, 2))
+            pts = np.ascontiguousarray(pts)
+
+            color = (0, 0, 255) if slot_status[poly["id"]] == "FILLED" else (0, 255, 0)
             cv2.polylines(frame, [pts], True, color, 2)
 
-        cv2.putText(frame, f"CARS: {car_count}", (30, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv2.putText(frame, f"FREE: {free_zones}", (30, 80),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(frame, f"OCC: {occ_zones}", (30, 120),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        # ---------------- SEND FRAME ----------------
+        success, buffer = cv2.imencode(".jpg", frame)
+        if not success:
+            continue
 
-        _, buffer = cv2.imencode(".jpg", frame)
-        yield (b"--frame\r\n"
-               b"Content-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n"
+            + buffer.tobytes()
+            + b"\r\n"
+        )
 
 
-# ---------------- API ----------------
-@app.get("/api/status")
+# ================= API =================
+@router.get("/video")
+def video_feed():
+    return StreamingResponse(
+        generate_frames(),
+        media_type="multipart/x-mixed-replace; boundary=frame"
+    )
+@router.get("/status")
 def get_status():
     return latest_status
 
-
-@app.get("/api/video")
-def video_feed():
-    return StreamingResponse(generate_frames(),
-                             media_type="multipart/x-mixed-replace; boundary=frame")
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("Server:app", host="0.0.0.0", port=8000, reload=True)

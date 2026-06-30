@@ -28,7 +28,7 @@ export default function Dashboard() {
 
         {/* 🔴 ALERT AT TOP */}
         <div className="alert-row">
-          <AlertBox show={status.occupied > status.free} />
+          <AlertBox show={status.occupied > status.free + status.occupied} />
         </div>
 
         {/* 🎥 VIDEO + 📊 STATS SIDE BY SIDE */}
